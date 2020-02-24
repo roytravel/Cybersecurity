@@ -1,0 +1,95 @@
+class MainClass
+{
+    typedef byte[] ByteArray;
+
+    void Main(CaseClass c)
+    {
+        SystemClass::ClearConsole(1);
+        EntryFileClass file();
+        Console.WriteLine("[+] Starting Carve ...");
+        int count = 0;
+        int offset = 0;
+
+        for(ItemIteratorClass i(c); EntryClass entry = i.GetNextEntry();){
+            if(entry.Name() == "Unallocated Clusters"){
+                if(file.Open(entry,FileClass::SLACK)){
+                    ByteArray bin(entry.LogicalSize());
+                    file.ReadBinary(bin);
+                    LocalFileClass localFile();
+
+                    for(int idx=0; idx<entry.LogicalSize(); idx++){
+                        if ((bin[idx] == 0x50) && (bin[idx+1] == 0x4B) && (bin[idx+2] == 0x03) && (bin[idx+3] == 0x04) && (bin[idx+4] == 0x14) && (bin[idx+5] == 0x00)){
+                                Console.WriteLine("[+] Start of File : " + idx);
+                                offset = idx;
+
+                                for(int sigOff=idx; sigOff<entry.LogicalSize()-idx; sigOff++){
+                                    bool flag = 0;
+
+                                    if (flag == 0){
+                                        if ((bin[sigOff] == 0x77) && (bin[sigOff+1] == 0x6F) && (bin[sigOff+2] == 0x72) &&  (bin[sigOff+3] == 0x6B) && 
+                                        (bin[sigOff+4] == 0x73) && (bin[sigOff+5] == 0x68) && (bin[sigOff+6] == 0x65) && (bin[sigOff+7] == 0x65) && (bin[sigOff+8] == 0x74)){
+                                            Console.WriteLine("[+] xlsx Signature: " + sigOff);
+                                            localFile.Open("C:\\" + count + ".xlsx", FileClass::WRITE);
+                                            count = count +1;
+                                            flag = 1;
+                                            idx = idx + sigOff;
+
+                                            for(int footer=idx; footer<entry.LogicalSize(); footer++){
+                                                if ((bin[footer] == 0x50) && (bin[footer+1] == 0x4B) && (bin[footer+2]== 0x05) && (bin[footer+3] == 0x06)){
+                                                    Console.WriteLine("[+] Footer Offset : " + footer);
+                                                    Console.WriteLine("[+] End of file   : " + footer+22);
+                                                    Console.WriteLine("--------------------------------------");
+
+                                                    for(int EOF = offset; EOF < footer + 22; EOF++){
+                                                        localFile.WriteBinary(bin[EOF]);
+                                                        flag = 0;}
+                                                    flag = 1;
+                                                    idx = footer;
+                                                    localFile.Close();
+                                                    break;
+                                                }
+                                            }
+                                            
+                                            if (flag == 1){
+                                                flag = 0;
+                                                break;}
+                                        }
+
+                                        else if ((bin[sigOff] == 0x66) && (bin[sigOff+1] == 0x6F) && (bin[sigOff+2] == 0x6E) && (bin[sigOff+3] == 0x74) && 
+                                            (bin[sigOff+4] == 0x54) && (bin[sigOff+5] == 0x61) && (bin[sigOff+6] == 0x62) && (bin[sigOff+7] == 0x6C) && (bin[sigOff+8] == 0x65)){
+                                                Console.WriteLine("[+] docx Signature : " + sigOff);
+                                                localFile.Open("C:\\" + count + ".docx", FileClass::WRITE);
+                                                count = count +1;
+                                                flag = 1;
+                                                idx = idx + sigOff;
+
+                                            for(int footer=idx; footer<entry.LogicalSize(); footer++){
+                                                if ((bin[footer] == 0x50) && (bin[footer+1] == 0x4B) && (bin[footer+2]== 0x05) && (bin[footer+3] ==0x06)){
+                                                    Console.WriteLine("[+] Footer Offset : " + footer);
+                                                    Console.WriteLine("[+] End of File   : " +footer+22);
+                                                    Console.WriteLine("--------------------------------------");
+
+                                                    for(int EOF=offset; EOF < footer+22; EOF++){
+                                                        localFile.WriteBinary(bin[EOF]);
+                                                        flag = 0;
+                                                    }
+                                                    idx = footer;
+                                                    localFile.Close();
+                                                    break;
+                                                }
+                                            }
+
+                                            if (flag == 1){
+                                                flag = 0;
+                                                break;}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        Console.WriteLine("{0} files Extraced ", count);
+    }
+}
