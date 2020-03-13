@@ -7,39 +7,43 @@ class Label(object):
     def __init__(self):
         pass
 
+
     # Read labels data to extract column
     def read_csv(self):
         csv = pd.read_csv('C:/labels.csv')
         return csv
+
 
     # Drop column to see clearly.
     def drop_column(self, csv):
         selected_csv = csv.drop(['subID','done','file_name','file_size','file_type'], axis=1, inplace=False)
         return selected_csv
     
-    ## It need to edit
+    
+    # Parse CID and Category
     def get_cID_funName(self, selected_csv):
         category = ['infostealer','keylogger','ransomware','stealth','worm']
         selection = list()
         for index in range(len(selected_csv)):
-            cID = selected_csv['cID'][index]
-            function_name = selected_csv['function_name'][index]
+            if (selected_csv['function_name'][index] in category):
+                cID = selected_csv['cID'][index]
+                function_name = selected_csv['function_name'][index]
+                selection.append(dict(cid = cID, function_name = function_name))            
+        return selection
 
-            if function_name in category:
-                print ("[+] Fun : {} / CID : {}".format(function_name, cID))
-            
-        return cID, function_name
 
 
 class Extract(object):
     def __init__(self):
         pass
 
+
     # Convert type of data to json
-    def get_json(self, fileName):
-        with open(fileName, mode = 'r') as file:
+    def get_json(self, reportPath):
+        with open(reportPath, mode = 'r') as file:
             json_data = json.load(file)
         return json_data
+
 
     # Extract category, api, arguments, flags
     def json_signatures(self, json_data):
@@ -59,6 +63,7 @@ class Extract(object):
                 pass
         return elements
 
+
     # Extract DLL and API
     def json_static(self, json_data):
         data = json_data['static']['pe_imports']
@@ -71,6 +76,7 @@ class Extract(object):
                 element.append(data[i]['imports'][j])
             elements.append(element)
         return elements
+
 
     # Extract category, api, arguments, flags
     def json_behavior(self, json_data):
@@ -101,24 +107,28 @@ if __name__ == '__main__':
 
     csv = Label.read_csv()
     selected_csv = Label.drop_column(csv)
-    cID, function_name = Label.get_cID_funName(selected_csv)
-    print (cID, function_name)
+    selection = Label.get_cID_funName(selected_csv)
 
-    # fileName = "<PATH>"    
+    
+    
+    for i in range(len(selection)):        
+        key = list(selection[i].values())[0]
+        values = list(selection[i].values())[1]
+        reportPath = "<PATH>" + str(key)
+        json_data = Extract.get_json(reportPath)
 
-    # json_data = Extract.get_json(fileName)
 
-    # elements_1 = Extract.json_signatures(json_data)
-    # for i in range(len(elements_1)):
-    #     print (elements_1[i])
 
-    # elements_2 = Extract.json_static(json_data)
-    # for i in range(len(elements_2)):
-    #     for j in range(len(elements_2[i])):
-    #         print (elements_2[i][j])
+        # elements_1 = Extract.json_signatures(json_data)
+        # for i in range(len(elements_1)):
+        #     print (elements_1[i])
+
+        # elements_2 = Extract.json_static(json_data)
+        # for i in range(len(elements_2)):
+        #     for j in range(len(elements_2[i])):
+        #         print (elements_2[i][j])
           
-    # elements_3 = Extract.json_behavior(json_data)
-    # for i in range(len(elements_3)):
-    #     print (elements_3[i])
-    
-    
+        # elements_3 = Extract.json_behavior(json_data)
+        # for i in range(len(elements_3)):
+        #     print (elements_3[i])
+
