@@ -108,27 +108,24 @@ if __name__ == '__main__':
     csv = Label.read_csv()
     selected_csv = Label.drop_column(csv)
     selection = Label.get_cID_funName(selected_csv)
-
-    
     
     for i in range(len(selection)):        
         key = list(selection[i].values())[0]
-        values = list(selection[i].values())[1]
-        reportPath = "<PATH>" + str(key)
+        values = list(selection[i].values())[1
+        
+        reportPath = "<PATH>" + str(key) + '/report.json'
         json_data = Extract.get_json(reportPath)
 
+        elements_1 = Extract.json_signatures(json_data)
+        for i in range(len(elements_1)):
+            print (elements_1[i])
 
-
-        # elements_1 = Extract.json_signatures(json_data)
-        # for i in range(len(elements_1)):
-        #     print (elements_1[i])
-
-        # elements_2 = Extract.json_static(json_data)
-        # for i in range(len(elements_2)):
-        #     for j in range(len(elements_2[i])):
-        #         print (elements_2[i][j])
+        elements_2 = Extract.json_static(json_data)
+        for i in range(len(elements_2)):
+            for j in range(len(elements_2[i])):
+                print (elements_2[i][j])
           
-        # elements_3 = Extract.json_behavior(json_data)
-        # for i in range(len(elements_3)):
-        #     print (elements_3[i])
+        elements_3 = Extract.json_behavior(json_data)
+        for i in range(len(elements_3)):
+            print (elements_3[i])
 
