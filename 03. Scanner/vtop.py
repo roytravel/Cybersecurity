@@ -12,7 +12,7 @@ def is48bit(vaddr):
     if len(initalBit) != 48:
         lackCount = 48 - len(initalBit)
         zeroFill = '0' * lackCount
-        complete = zeroFill + initalbit
+        complete = zeroFill + initalBit
         return complete
     else:
         return initalBit
